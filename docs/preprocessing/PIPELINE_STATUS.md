@@ -52,8 +52,41 @@ The authoritative pre-training dataset generation pipeline for YOLOv8n artificia
 | **Runtime: Normalize** | `ml/preprocessing/normalize.py` | **A. REQUIRED FOR PIPELINE** | ACTIVE | **Yes (Service)** | Reusable normalization utilities (percentile stretch, water column blanking) for inference and backend testing. |
 | **Runtime: Tiling** | `ml/preprocessing/tiling.py` | **A. REQUIRED FOR PIPELINE** | ACTIVE | **Yes (Service)** | Reusable sliding-window generator and global-to-tile coordinate mapper used in the inference pipeline. |
 | **Runtime: Pipeline** | `ml/preprocessing/pipeline.py` | **A. REQUIRED FOR PIPELINE** | ACTIVE | **Yes (Service)** | Unified `SonarPreprocessingPipeline` orchestration class used by `inference_service.py`. |
+---
+
+## 2b. SCTD Dataset — Pipeline Script Classification & Status Table
+
+| Stage | Script / Module | Classification | Status | Used for Training? | Reason / Technical Role |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **01 Dataset Inspection** | `ml/preprocessing/01_inspect_sctd.py` | **B. RESEARCH / EXPERIMENT** | COMPLETE | No | Read-only scan: 357 images, 3 raw classes (ship/aircraft/human), no site/nav/mask metadata. |
+| **02 Quality Control** | `ml/preprocessing/02_quality_check_sctd.py` | **A. REQUIRED FOR PIPELINE** | COMPLETE | Yes (Filter) | 356 VALID, 1 SUSPICIOUS, 0 INVALID. |
+| **03 Normalization** | `ml/preprocessing/03_normalize_sctd.py` | **A. REQUIRED FOR PIPELINE** | COMPLETE | Yes (Methodology) | 1–99% percentile stretch, same validated method as AI4Shipwrecks. Run as a separate step (not baked into tiling) for this adaptation. |
+| **04 CLAHE** | *Not run for SCTD* | **B. RESEARCH / EXPERIMENT** | SKIPPED | No | Reused AI4Shipwrecks ablation finding — not re-tested. |
+| **05 Denoising** | *Not run for SCTD* | **B. RESEARCH / EXPERIMENT** | SKIPPED | No | Reused AI4Shipwrecks ablation finding — not re-tested. |
+| **06 Geometry / Nadir** | *None* | **N/A** | SKIPPED | No | SCTD images are small pre-cropped chips, not continuous swaths — no nadir strip present. |
+| **07 Tiling** | `ml/preprocessing/07_tile_sctd.py` | **A. REQUIRED FOR PIPELINE** | COMPLETE | Yes | 640×640, 20% overlap/512px stride for images ≥640px; zero-padding for smaller (majority of SCTD). 398 tiles produced. |
+| **08 Box → YOLO** | *(combined into 07_tile_sctd.py)* | **A. REQUIRED FOR PIPELINE** | COMPLETE | Yes | SCTD provides real bounding boxes (VOC XML), not masks — boxes re-clipped and converted directly per tile; no separate mask step needed. |
+| **09 Split** | `ml/preprocessing/09_site_split_sctd.py` | **A. REQUIRED FOR PIPELINE** | COMPLETE | Yes | No site metadata available — split by source image instead (249/54/54 images → 282/60/56 tiles), same leakage-prevention goal. |
+
+**Known limitations (SCTD):** no hard-negative examples present; no navigation metadata; "ship" label not distinguished as wreck vs. active vessel.
+---
+
+## 2c. KLSG Dataset — Pipeline Script Classification & Status Table
+
+| Stage | Script / Module | Classification | Status | Used for Training? | Reason / Technical Role |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **01 Dataset Inspection** | `ml/preprocessing/01_inspect_klsg.py` | **B. RESEARCH / EXPERIMENT** | COMPLETE | No | 428 images (380 ship, 48 plane), zero annotation files of any kind. |
+| **02 Quality Control** | `ml/preprocessing/02_quality_check_klsg.py` | **A. REQUIRED FOR PIPELINE** | COMPLETE | Yes (Filter) | 425 VALID, 3 SUSPICIOUS, 0 INVALID. |
+| **03 Normalization** | `ml/preprocessing/03_normalize_klsg.py` | **A. REQUIRED FOR PIPELINE** | COMPLETE | Yes (Methodology) | 1-99% percentile stretch, same validated method. |
+| **04 CLAHE / 05 Denoising** | *Not run* | **B. RESEARCH / EXPERIMENT** | SKIPPED | No | Reused AI4Shipwrecks ablation finding. |
+| **06 Geometry / Nadir** | *None* | **N/A** | SKIPPED | No | Pre-cropped chips, no nadir strip present. |
+| **07 Tiling + Labeling** | `ml/preprocessing/07_tile_klsg.py` | **A. REQUIRED FOR PIPELINE** | COMPLETE, **WEAK LABELS** | Yes (flagged) | 474 tiles. **No real annotations exist in KLSG** — every box is an approximated central-80% region, flagged `weak_label=True`. |
+| **09 Split** | `ml/preprocessing/09_site_split_klsg.py` | **A. REQUIRED FOR PIPELINE** | COMPLETE | Yes | No site metadata — split by source image (299/64/65 images -> 340/65/69 tiles). |
+
+**Critical flag:** KLSG contributes weak/approximated labels only. Any reported accuracy figures must separate KLSG's contribution from SCTD/AI4Shipwrecks' real-annotation contributions — do not present a single blended accuracy number across all three without disclosing this difference.
 
 ---
+
 
 ## 3. Script Classification Definitions
 
