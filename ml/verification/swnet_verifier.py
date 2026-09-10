@@ -222,15 +222,30 @@ class SWNetVerifier(BaseROIVerifier):
 
     def _initialize_model(self):
         """Attempts to load trained SW-Net model weights if available."""
-        if self.model_path and os.path.exists(self.model_path):
+        target_path = self.model_path
+        if target_path is None:
+            default_best = "outputs/models/swnet/best_swnet.pt"
+            if os.path.exists(default_best):
+                target_path = default_best
+
+        if target_path and os.path.exists(target_path):
             try:
                 import torch
-                print(f"[SWNetVerifier] Loading SW-Net checkpoint from {self.model_path} onto {self.device}...")
-                self.model = torch.load(self.model_path, map_location=self.device)
+                from ml.verification.swnet_train import SWNetArchitecture
+                print(f"[SWNetVerifier] Loading SW-Net checkpoint from {target_path} onto {self.device}...")
+                ckpt = torch.load(target_path, map_location=self.device)
+                if isinstance(ckpt, dict) and "model_state_dict" in ckpt:
+                    self.model = SWNetArchitecture(in_channels=1, num_classes=1).to(self.device)
+                    self.model.load_state_dict(ckpt["model_state_dict"])
+                else:
+                    self.model = ckpt
+
                 if hasattr(self.model, "eval"):
                     self.model.eval()
+                self.model_path = target_path
+                self.model_version = "swnet-direction-aware-v1.0"
             except Exception as e:
-                print(f"[SWNetVerifier] Warning: Failed to load checkpoint {self.model_path}: {e}")
+                print(f"[SWNetVerifier] Warning: Failed to load checkpoint {target_path}: {e}")
                 self.model = None
         else:
             self.model = None
@@ -320,12 +335,15 @@ class SWNetVerifier(BaseROIVerifier):
     def _infer_network(self, crop_img: np.ndarray) -> Tuple[np.ndarray, float]:
         """Executes forward pass through PyTorch SW-Net segmentation model."""
         import torch
+        orig_h, orig_w = crop_img.shape[:2]
         if len(crop_img.shape) == 3:
             gray = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
         else:
             gray = crop_img
 
-        norm = (gray.astype(np.float32) / 255.0)
+        # Resize to standard network patch size
+        patch_res = cv2.resize(gray, (128, 128), interpolation=cv2.INTER_LINEAR)
+        norm = (patch_res.astype(np.float32) / 255.0)
         tensor = torch.from_numpy(norm).unsqueeze(0).unsqueeze(0).to(self.device)
 
         with torch.no_grad():
@@ -334,8 +352,10 @@ class SWNetVerifier(BaseROIVerifier):
                 output = output[0]
             prob = torch.sigmoid(output).squeeze().cpu().numpy()
 
-        binary_mask = (prob >= self.confidence_threshold).astype(np.uint8) * 255
-        mean_conf = float(np.mean(prob[prob >= self.confidence_threshold])) if np.any(prob >= self.confidence_threshold) else 0.0
+        # Resize probability mask back to original crop resolution
+        prob_orig = cv2.resize(prob, (orig_w, orig_h), interpolation=cv2.INTER_LINEAR)
+        binary_mask = (prob_orig >= self.confidence_threshold).astype(np.uint8) * 255
+        mean_conf = float(np.mean(prob_orig[prob_orig >= self.confidence_threshold])) if np.any(prob_orig >= self.confidence_threshold) else 0.0
         return binary_mask, mean_conf
 
     def _heuristic_contour_segmentation(
