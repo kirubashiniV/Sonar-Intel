@@ -34,23 +34,23 @@ export const MapView: React.FC<MapViewProps> = ({
         style: {
           version: 8,
           sources: {
-            'carto-dark': {
+            'dark-canvas': {
               type: 'raster',
               tiles: [
-                'https://basemaps.cartocdn.com/rastertiles/dark_all/{z}/{x}/{y}@2x.png',
-                'https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png'
+                'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}'
               ],
               tileSize: 256,
-              attribution: '© CartoDB, © OpenStreetMap'
+              maxzoom: 16,
+              attribution: '© Esri, HERE, Garmin'
             }
           },
           layers: [
             {
-              id: 'carto-dark-layer',
+              id: 'dark-canvas-layer',
               type: 'raster',
-              source: 'carto-dark',
+              source: 'dark-canvas',
               minzoom: 0,
-              maxzoom: 19
+              maxzoom: 22
             }
           ]
         },

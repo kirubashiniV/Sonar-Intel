@@ -25,13 +25,13 @@ export const StatCard: React.FC<StatCardProps> = ({
   return (
     <div
       onClick={onClick}
-      className={`group relative overflow-hidden bg-white rounded-[24px] border border-[#e6e6e6] p-6 shadow-soft hover:shadow-card-hover transition-all duration-300 ${
+      className={`group relative overflow-hidden bg-white rounded-[24px] border border-[#e2e8f0] p-6 shadow-soft hover:shadow-card-hover transition-all duration-300 ${
         onClick ? 'cursor-pointer hover:-translate-y-1' : ''
       }`}
     >
       {/* Absolute Decorative Glow Gradient */}
       <div 
-        className="absolute -right-8 -bottom-8 w-36 h-36 bg-[#ff383c]/5 rounded-full blur-3xl pointer-events-none transition-all duration-500 group-hover:bg-[#ff383c]/15 group-hover:scale-125" 
+        className="absolute -right-8 -bottom-8 w-36 h-36 bg-[#1d4ed8]/5 rounded-full blur-3xl pointer-events-none transition-all duration-500 group-hover:bg-[#1d4ed8]/20 group-hover:scale-125" 
       />
 
       {/* Top Header: Label & Icon Bucket */}
@@ -40,37 +40,37 @@ export const StatCard: React.FC<StatCardProps> = ({
           <span className="section-label block truncate">
             {label}
           </span>
-          <div className="text-3xl font-extrabold tracking-tight text-[#1f1f1f] font-display">
+          <div className="text-3xl font-extrabold tracking-tight text-[#0f172a] font-display">
             {value}
           </div>
         </div>
 
-        {/* Interactive Icon Bucket (Placely Spec) */}
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#fcfcfc] border border-[#e6e6e6] text-[#ff383c] transition-all duration-300 group-hover:bg-[#ff383c] group-hover:text-white group-hover:border-[#ff383c] group-hover:shadow-md group-hover:shadow-[#ff383c]/20">
+        {/* Interactive Icon Bucket (Majestic Blue Theme) */}
+        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-blue-50/70 border border-blue-100 text-[#1d4ed8] transition-all duration-300 group-hover:bg-[#1d4ed8] group-hover:text-white group-hover:border-[#1d4ed8] group-hover:shadow-[0_8px_20px_-3px_rgba(29,78,216,0.4)]">
           <Icon className="w-5 h-5 transition-transform duration-300 group-hover:scale-110" />
         </div>
       </div>
 
       {/* Footer / Trend Tracker */}
-      <div className="relative z-10 mt-5 flex items-center justify-between pt-3.5 border-t border-[#f2f2f2] text-xs">
+      <div className="relative z-10 mt-5 flex items-center justify-between pt-3.5 border-t border-[#f1f5f9] text-xs">
         {trend ? (
           <span
-            className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-semibold transition-colors ${
+            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-md text-xs font-semibold transition-colors ${
               trend.isNeutral
                 ? 'bg-slate-100 text-slate-700'
                 : trend.isUp
-                ? 'bg-emerald-50 text-emerald-700 border border-emerald-100'
-                : 'bg-[#ff383c]/10 text-[#ff383c] border border-[#ff383c]/20'
+                ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                : 'bg-rose-50 text-rose-700 border border-rose-200'
             }`}
           >
             {trend.value}
           </span>
         ) : (
-          <span className="text-xs text-[#8e8e93] font-medium">Calibrated</span>
+          <span className="text-xs text-[#64748b] font-medium">Calibrated</span>
         )}
 
         {subtext && (
-          <span className="text-xs font-medium text-[#8e8e93] truncate max-w-[180px]" title={subtext}>
+          <span className="text-xs font-medium text-[#64748b] truncate max-w-[180px]" title={subtext}>
             {subtext}
           </span>
         )}

@@ -99,14 +99,14 @@ export const Dashboard: React.FC = () => {
     >
       {/* System Error / Alert Toast */}
       {error && (
-        <div className="mx-8 mt-4 p-4 rounded-2xl bg-[#ff383c]/10 border border-[#ff383c]/30 text-[#ff383c] flex items-center justify-between shadow-soft">
+        <div className="mx-8 mt-4 p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-700 flex items-center justify-between shadow-soft">
           <div className="flex items-center gap-2.5 text-xs font-semibold">
-            <AlertCircle className="w-4 h-4 text-[#ff383c]" />
+            <AlertCircle className="w-4 h-4 text-rose-600" />
             <span>[System Notice] {error}</span>
           </div>
           <button 
             onClick={() => setError(null)} 
-            className="p-1 rounded-full hover:bg-[#ff383c]/20 text-[#ff383c] transition-colors cursor-pointer"
+            className="p-1 rounded-full hover:bg-rose-100 text-rose-700 transition-colors cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -118,6 +118,7 @@ export const Dashboard: React.FC = () => {
         <DashboardPage
           survey={survey}
           contacts={contacts}
+          navTrack={navTrack}
           onSelectScreen={setActiveScreen}
           onSelectContact={(c) => {
             setSelectedContact(c);
@@ -137,6 +138,7 @@ export const Dashboard: React.FC = () => {
           onSelectContact={setSelectedContact}
           onRunAnalysis={() => runAnalysis(0.20)}
           onVerifyContact={handleVerifyContact}
+          onNavigateToDashboard={() => setActiveScreen('dashboard')}
         />
       )}
 
@@ -149,6 +151,8 @@ export const Dashboard: React.FC = () => {
           onSelectContact={setSelectedContact}
           onSubmitReview={submitReview}
           onNavigateToMap={() => setActiveScreen('gis-mapping')}
+          onNavigateToAnalysis={() => setActiveScreen('sonar-analysis')}
+          onNavigateToDashboard={() => setActiveScreen('dashboard')}
         />
       )}
 
@@ -163,12 +167,15 @@ export const Dashboard: React.FC = () => {
           onNavigateToAnalysis={() => setActiveScreen('sonar-analysis')}
           onNavigateToVerify={() => setActiveScreen('contact-verification')}
           onExportGeoJSON={handleExportGeoJSON}
+          onNavigateToDashboard={() => setActiveScreen('dashboard')}
         />
       )}
 
       {/* Screen 5: AI Deep Learning Pipeline Monitor (Placely Timespent Theme) */}
       {activeScreen === 'ai-pipeline' && (
-        <AiPipelinePage />
+        <AiPipelinePage 
+          onNavigateToDashboard={() => setActiveScreen('dashboard')}
+        />
       )}
 
       {/* Screen 6: Reports & Export Central (Placely Timespent Theme) */}
@@ -176,26 +183,29 @@ export const Dashboard: React.FC = () => {
         <ReportsPage
           survey={survey}
           contacts={contacts}
+          onNavigateToDashboard={() => setActiveScreen('dashboard')}
+          onSelectContact={setSelectedContact}
+          onNavigateToVerify={() => setActiveScreen('contact-verification')}
         />
       )}
 
       {/* Interactive Upload Swath Modal */}
       {showUploadModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-[28px] border border-[#e6e6e6] max-w-xl w-full p-7 space-y-5 shadow-2xl font-sans">
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[28px] border border-[#e2e8f0] max-w-xl w-full p-7 space-y-5 shadow-2xl font-sans">
             
-            <div className="flex items-center justify-between border-b border-[#f2f2f2] pb-3">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div>
-                <h4 className="text-lg font-extrabold text-[#1f1f1f] font-display">
+                <h4 className="text-lg font-extrabold text-[#0f172a] font-display">
                   Ingest Side-Scan Sonar Swath
                 </h4>
-                <p className="text-xs text-[#8e8e93] mt-0.5">
+                <p className="text-xs text-[#64748b] mt-0.5">
                   Upload raw SSS imagery and optional towfish navigation log for PostGIS georeferencing.
                 </p>
               </div>
               <button 
                 onClick={() => setShowUploadModal(false)}
-                className="p-2 rounded-full hover:bg-slate-100 text-[#8e8e93] transition-colors cursor-pointer"
+                className="p-2 rounded-full hover:bg-slate-100 text-[#64748b] transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -233,27 +243,27 @@ export const Dashboard: React.FC = () => {
               onClick={() => sonarInputRef.current?.click()}
               className={`border-2 border-dashed rounded-2xl p-6 text-center space-y-2 transition-all cursor-pointer ${
                 isDragging 
-                  ? 'border-[#ff383c] bg-[#ff383c]/5' 
+                  ? 'border-[#1d4ed8] bg-blue-50/60 shadow-blue-sm' 
                   : selectedSonarFile 
                   ? 'border-emerald-400 bg-emerald-50/40' 
-                  : 'border-[#e6e6e6] hover:border-[#ff383c]/50 bg-[#fcfcfc]'
+                  : 'border-[#e2e8f0] hover:border-blue-400 bg-[#f8fafc]'
               }`}
             >
               {selectedSonarFile ? (
                 <div className="flex items-center justify-center gap-3">
                   <CheckCircle2 className="w-8 h-8 text-emerald-500 shrink-0" />
                   <div className="text-left">
-                    <div className="text-sm font-bold text-[#1f1f1f] truncate max-w-xs">{selectedSonarFile.name}</div>
-                    <div className="text-xs text-[#8e8e93]">
+                    <div className="text-sm font-bold text-[#0f172a] truncate max-w-xs">{selectedSonarFile.name}</div>
+                    <div className="text-xs text-[#64748b]">
                       {(selectedSonarFile.size / (1024 * 1024)).toFixed(2)} MB • Ready for AI Preprocessing
                     </div>
                   </div>
                 </div>
               ) : (
                 <>
-                  <Upload className="w-8 h-8 text-[#ff383c] mx-auto" />
-                  <div className="text-sm font-bold text-[#1f1f1f]">Click to select or drag Sonar Waterfall Swath</div>
-                  <div className="text-xs text-[#8e8e93]">Supports standard SSS GeoTIFF, PNG, JPG</div>
+                  <Upload className="w-8 h-8 text-[#1d4ed8] mx-auto" />
+                  <div className="text-sm font-bold text-[#0f172a]">Click to select or drag Sonar Waterfall Swath</div>
+                  <div className="text-xs text-[#64748b]">Supports standard SSS GeoTIFF, PNG, JPG</div>
                 </>
               )}
             </div>
@@ -264,23 +274,23 @@ export const Dashboard: React.FC = () => {
               className={`p-4 rounded-xl border border-dashed transition-all cursor-pointer flex items-center justify-between ${
                 selectedNavFile 
                   ? 'border-emerald-300 bg-emerald-50/30' 
-                  : 'border-[#e6e6e6] bg-[#fcfcfc] hover:border-slate-300'
+                  : 'border-[#e2e8f0] bg-[#f8fafc] hover:border-slate-300'
               }`}
             >
               <div className="flex items-center gap-3">
-                <Navigation className={`w-5 h-5 ${selectedNavFile ? 'text-emerald-500' : 'text-[#8e8e93]'}`} />
+                <Navigation className={`w-5 h-5 ${selectedNavFile ? 'text-emerald-500' : 'text-[#64748b]'}`} />
                 <div>
-                  <div className="text-xs font-bold text-[#1f1f1f]">
+                  <div className="text-xs font-bold text-[#0f172a]">
                     {selectedNavFile ? selectedNavFile.name : 'Attach Towfish Navigation Log (Optional)'}
                   </div>
-                  <div className="text-[11px] text-[#8e8e93]">
+                  <div className="text-[11px] text-[#64748b]">
                     {selectedNavFile ? `${(selectedNavFile.size / 1024).toFixed(1)} KB • Coordinates linked` : 'CSV containing ping_id, latitude, longitude, heading'}
                   </div>
                 </div>
               </div>
               <button 
                 type="button"
-                className="text-xs font-bold text-[#ff383c] hover:underline cursor-pointer"
+                className="text-xs font-bold text-[#1d4ed8] hover:underline cursor-pointer"
               >
                 {selectedNavFile ? 'Change' : 'Browse'}
               </button>
@@ -296,7 +306,7 @@ export const Dashboard: React.FC = () => {
                   setSelectedNavFile(null);
                 }}
                 disabled={isUploading}
-                className="px-5 py-2.5 rounded-full border border-[#e6e6e6] text-[#1f1f1f] text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
+                className="px-5 py-2.5 rounded-full border border-[#e2e8f0] text-[#0f172a] text-xs font-semibold hover:bg-slate-50 transition-colors cursor-pointer"
               >
                 Cancel
               </button>
@@ -307,8 +317,8 @@ export const Dashboard: React.FC = () => {
                 disabled={!selectedSonarFile || isUploading}
                 className={`px-6 py-2.5 rounded-full text-xs font-bold flex items-center gap-2 transition-all shadow-tactile ${
                   !selectedSonarFile || isUploading
-                    ? 'bg-slate-200 text-[#8e8e93] cursor-not-allowed'
-                    : 'bg-[#ff383c] hover:bg-[#dc143c] text-white hover:scale-[1.02] active:scale-[0.98] cursor-pointer'
+                    ? 'bg-slate-200 text-[#64748b] cursor-not-allowed'
+                    : 'bg-[#1d4ed8] hover:bg-[#1e40af] text-white hover:scale-[1.02] active:scale-[0.98] cursor-pointer shadow-blue-glow'
                 }`}
               >
                 <Play className="w-3.5 h-3.5 fill-current" />
